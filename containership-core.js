@@ -47,19 +47,19 @@ class ContainerShipCore {
             plugins.initialize(self);
             plugins.load();
 
+            // handle process reload
             process.on('SIGHUP', plugins.reload);
 
-            process.on('SIGTERM', () => {
-                self.cluster.legiond.exit(() => {
+            const handle_process_exit = (/* code */) => {
+                plugins.stop();
+                this.cluster.legiond.exit(() => {
                     process.exit(0);
                 });
-            });
+            };
 
-            process.on('SIGINT', () => {
-                self.cluster.legiond.exit(() => {
-                    process.exit(0);
-                });
-            });
+            // handle process exit
+            process.on('SIGTERM', handle_process_exit);
+            process.on('SIGINT', handle_process_exit);
         });
     }
 
